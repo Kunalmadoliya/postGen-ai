@@ -1,9 +1,14 @@
 import React from 'react'
+import Nav from './components/Nav'
+import Home from './components/Home'
+
 
 const App = () => {
+
   return (
-    <div>
-      
+    <div className='h-screen border-5'>
+      <Nav/>
+      <Home />
     </div>
   )
 }

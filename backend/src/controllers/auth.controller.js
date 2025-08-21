@@ -36,7 +36,7 @@ async function loginUser(req, res) {
   const user = await userModel.findOne({username});
 
   if (!user) {
-    return res.send(400).json({
+    return res.status(400).json({
       message: "User not found",
     });
   }
@@ -44,7 +44,7 @@ async function loginUser(req, res) {
   const verifiedPasswod = await bcrypt.compare(password , user.password)
 
   if (!verifiedPasswod) {
-    return res.send(400).json({message: "Invalid Password"});
+    return res.status(400).json({message: "Invalid Password"});
   }
 
   const token = jwt.sign(
