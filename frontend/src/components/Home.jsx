@@ -1,23 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { Upload } from "lucide-react";
-import { useForm } from "react-hook-form";
+import React, {useState, useEffect} from "react";
+import {useForm} from "react-hook-form";
+import {Upload} from "lucide-react";
 import axios from "axios";
 
 const Home = () => {
+  const {register, handleSubmit, watch} = useForm();
+
   const [preview, setPreview] = useState(null);
-  const [caption, setCaption] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
-  const imageFile = watch("image")?.[0];
-
-
+  const [caption, setCaptions] = useState("");
+  const fileImage = watch("image");
   useEffect(() => {
-    if (imageFile) setPreview(URL.createObjectURL(imageFile));
-  }, [imageFile]);
+    if (fileImage && fileImage[0]) {
+      setPreview(URL.createObjectURL(fileImage[0]));
+    }
+  }, [fileImage]);
 
   const onSubmit = async (data) => {
-    if (!data.image?.[0]) return;
+    if (!data.image || !data.image[0]) {
+      alert("Please Upload the Image First!!!");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("image", data.image[0]);
@@ -25,66 +28,72 @@ const Home = () => {
     try {
       setLoading(true);
       const res = await axios.post("http://localhost:3000/api/post", formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {"Content-Type": "multipart/form-data"},
       });
 
-     
-      setCaption(res.data?.caption || "❌ Failed to generate caption. Try again.");
+      setCaptions(res.data?.caption || "❌ Failed to generate caption.");
     } catch (err) {
       console.error(err);
-      setCaption("❌ Failed to generate caption. Try again.");
+      setCaptions("❌ Failed to generate caption.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-  
-      <div className="text-center py-5 px-10 md:px-40">
+    <div className="p-5">
+      {/* Heading */}
+      <div className="text-center py-5">
         <h1 className="font-bold text-3xl md:text-5xl">
-          Generate Professional Product Captions
+          Generate Product Captions
         </h1>
-        <p className="font-medium text-base md:text-xl py-5">
-          Upload your product images and get AI-generated captions perfect for
-          e-commerce and social media.
+        <p className="text-gray-600 mt-3">
+          Upload an image and get AI-generated captions.
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10 p-10">
-      
-        <div className="border rounded-md p-5 w-80 md:w-96">
-          <div className="flex gap-2 items-center mb-3">
-            <i className="ri-upload-2-line"></i>
-            <p>Upload Image</p>
-          </div>
+      {/* Upload & Caption Section */}
+      <div className="flex flex-col md:flex-row items-center justify-center gap-8 mt-8">
+        {/* Upload Box */}
+        <div className="border rounded-lg p-5 w-80 md:w-96">
+          <h2 className="font-medium mb-3">Upload Image</h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="border-dotted border h-80 rounded-2xl flex flex-col items-center justify-center p-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="border-dashed border-2 h-80 rounded-xl flex flex-col items-center justify-center p-4"
+          >
+            {/* File input */}
             <input
               type="file"
               accept="image/png, image/jpeg, image/webp"
               className="hidden"
               id="fileInput"
-              {...register("image", { required: "Image is required" })}
+              {...register("image")}
             />
 
+            {/* Preview or Upload button */}
             {preview ? (
-              <img src={preview} alt="Preview" className="max-h-72 object-contain" />
+              <img
+                src={preview}
+                alt="Preview"
+                className="max-h-64 object-contain"
+              />
             ) : (
-              <label htmlFor="fileInput" className="flex flex-col items-center gap-2 cursor-pointer">
-                <div className="bg-green-50 p-4 rounded-full">
-                  <Upload className="w-8 h-8 text-green-500" />
+              <label
+                htmlFor="fileInput"
+                className="flex flex-col items-center gap-2 cursor-pointer"
+              >
+                <div className="bg-green-100 p-4 rounded-full">
+                  <Upload className="w-8 h-8 text-green-600" />
                 </div>
-                <p className="font-medium">
-                  Drop your image here or <span className="text-blue-600">click to browse</span>
+                <p className="font-medium">Click to browse image</p>
+                <p className="text-sm text-gray-500">
+                  JPG, PNG, WebP up to 10MB
                 </p>
-                <p className="text-sm text-gray-500">Supports JPG, PNG, WebP up to 10MB</p>
               </label>
             )}
 
-            {errors.image && <p className="text-red-500 text-sm mt-2">{errors.image.message}</p>}
-
+            {/* Submit button */}
             <button
               type="submit"
               className="mt-4 bg-green-500 text-white px-4 py-2 rounded-md"
@@ -95,14 +104,11 @@ const Home = () => {
           </form>
         </div>
 
-       
-        <div className="border rounded-md p-5 w-80 md:w-96">
-          <div className="flex gap-2 items-center mb-3">
-            <i className="ri-gemini-line"></i>
-            <p>Generated Caption</p>
-          </div>
-          <p className="text-gray-500 mt-3">
-            {caption || "(AI-generated caption will appear here)"}
+        {/* Caption Box */}
+        <div className="border rounded-lg p-5 w-80 md:w-96">
+          <h2 className="font-medium mb-3">Generated Caption</h2>
+          <p className="text-gray-600 mt-3">
+            {caption || "(Your AI-generated caption will appear here)"}
           </p>
         </div>
       </div>
